@@ -1,0 +1,28 @@
+{
+  "name": "code-tv",
+  "version": "0.0.1",
+  "description": "GitHub Repository Code History Visualisation Service",
+  "main": "libs/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/mocha -u add"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-tv/code-tv.git"
+  },
+  "keywords": [
+    "gource",
+    "code",
+    "github",
+    "service"
+  ],
+  "author": "Marek Potociar, Ondrej Kosatka",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/code-tv/code-tv/issues"
+  },
+  "homepage": "https://github.com/code-tv/code-tv#readme",
+  "dependencies": {
+    "restify": "^4.3.0"
+  }
+}
