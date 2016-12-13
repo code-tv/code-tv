@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: code-tv-master
+  name: code-tv-agent
   labels:
-    run: code-tv-master
+    run: code-tv-agent
 spec:
   ports:
   - port: 8080
@@ -11,22 +11,22 @@ spec:
     protocol: TCP
     name: http
   selector:
-    run: code-tv-master
+    run: code-tv-agent
   type: LoadBalancer
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: code-tv-master
+  name: code-tv-agent
 spec:
   replicas: 3
   template:
     metadata:
       labels:
-        run: code-tv-master
+        run: code-tv-agent
     spec:
       containers:
-      - name: code-tv-master
-        image: gcr.io/code-tv-service/master:latest
+      - name: code-tv-agent
+        image: gcr.io/code-tv-service/agent:latest
         ports:
         - containerPort: 8080
