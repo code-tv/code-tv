@@ -4,7 +4,9 @@ Gource Agent
 Gource Agent is a [Docker][docker] containerized process able to generate [Gource][gource] 
 video presentations.
 
-# How to build
+Run nodejs app as usual (bin/www) and type http://localhost:8080/repository/234234 in a browser.
+
+# How to build 
 ## Manually
 > docker build -t code-tv/code-tv-agent .
 ## Script
