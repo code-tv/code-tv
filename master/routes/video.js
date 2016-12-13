@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 /* GET users listing. */
-router.post('/:id', function(req, res) {
+router.get('/:id', function(req, res) {
     console.info(req.params.id);
     console.info('Waiting for ' + req.params.id);
 
