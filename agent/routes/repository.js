@@ -6,13 +6,13 @@ var datastore = require('@google-cloud/datastore')({
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
-/* ge/post repository */
-router.all('/:repo_url', function(req, res, next) {
-    var repo_url = req.params.repo_url;
-    console.info(repo_url);
-    console.info('Waiting for ' + repo_url);
+/* get/post repository */
+router.all('/:org_name/:repo_name', function (req, res, next) {
+    var org_name = req.params.org_name;
+    var repo_name = req.params.repo_name;
+    console.info('Requested repository: ' + org_name + '/' + repo_name);
 
-    // var key = datastore.key('repository', repo_url);
+    // var key = datastore.key('repository', repo_name);
     //
     // datastore.get(key, function(err, entity) {
     //     if (err) {
@@ -23,10 +23,34 @@ router.all('/:repo_url', function(req, res, next) {
     //
     // });
 
-    // get youtube id from our id
-    var youtubeId = 'kcABOAAWn6s';
+    // RUN video generation script
+    var spawnCommand = require('child_process').spawn;
+    var renderScript = spawnCommand(
+        "scripts/render.sh",
+        [
+            '--github-repository-name', org_name + '/' + repo_name,
+            '--work-dir', '/work',
+            '--title', 'Title: Invoked from Node',
+            '--video-resolution', '960x540',
+            '--video-depth', '24',
+            '--seconds-per-day', '0.5'
+        ],
+        {
+            shell: '/bin/bash'
+        }
+    );
 
-    res.send(`Watch <a href="https://www.youtube.com/watch?v=${youtubeId}">youtube</a> video!`);
+    renderScript.stdout.on('data', function (data) {
+        res.write(data);
+    });
+
+    renderScript.stderr.on('data', function (data) {
+        res.write(data);
+    });
+
+    renderScript.on('close', function (code) {
+        res.write('render script exited with code: ' + code);
+    });
 });
 
 module.exports = router;

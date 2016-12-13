@@ -1,15 +1,20 @@
-FROM ubuntu:14.04
+FROM node:7.2.1
 
 RUN apt-get update -y && apt-get install -y software-properties-common
-RUN add-apt-repository -y ppa:kirillshkrogalev/ffmpeg-next
-RUN apt-get update -y && apt-get install -y git mercurial xvfb xfonts-base xfonts-75dpi xfonts-100dpi xfonts-cyrillic gource ffmpeg screen
+RUN apt-get update -y && apt-get install -y git mercurial xvfb xfonts-base xfonts-75dpi xfonts-100dpi xfonts-cyrillic gource libav-tools screen
 
-ADD ./start.sh /start.sh
+VOLUME ["/avatars", "/work"]
 
-ENV TITLE "Gource Video"
+# Create app directory
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+# Install app dependencies
+COPY package.json /usr/src/app/
+RUN npm install
+# Bundle app source
+COPY . /usr/src/app
 
-VOLUME ["/avatars", "/repository", "/work"]
+EXPOSE 8080
+CMD [ "npm", "start" ]
 
-WORKDIR /repository
-
-CMD bash /start.sh
+#CMD ["/bin/bash", "-c", "/usr/src/app/scripts/render.sh", "-g", "code-tv/code-tv", "-w", "/work", "-t", "Code TV Video"]
