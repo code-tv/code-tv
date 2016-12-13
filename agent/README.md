@@ -5,15 +5,26 @@ Gource Agent is a [Docker][docker] containerized process able to generate [Gourc
 video presentations.
 
 # How to build
-> docker build -t code-tv/gource-agent .  
+## Manually
+> docker build -t code-tv/code-tv-agent .
+## Script
+> ./build-docker.sh
 
 # How to run
+
+## Manually
 > docker run -it --rm --name gource-agent \  
 >     -v AVATARS_DIR:/avatars \  
->     -v REPOSITORY_DIR:/repository \  
+>     -v GIT_REPO_DIR:/repository \  
 >     -v WORK_DIR:/work \  
 >     --env VIDEO_TITLE="My video title" \  
->     code-tv/gource-agent
+>     code-tv/code-tv-agent
+## Script
+> export AVATARS_DIR=/tmp/avatars
+> export WORK_DIR=/tmp/work
+> export GIT_REPO_DIR=/tmp/repository
+> export GIT_REPO_URL=https://github.com/code-tv/code-tv.git
+> ./run-docker.sh
 
 To customize project avatar images, place the custom avatar images to the `avatars` 
 directory. The name of each avatar image must match the username (i.e. `*username*.png`).
