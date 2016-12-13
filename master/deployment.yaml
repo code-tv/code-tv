@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: code-tv-master
+  labels:
+    run: code-tv-master
+spec:
+  ports:
+  - port: 8080
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    run: code-tv-master
+    type: LoadBalancer
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: code-tv-master
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        run: code-tv-master
+    spec:
+      containers:
+      - name: code-tv-master
+        image: code-tv/master:latest
+        ports:
+        - containerPort: 8080

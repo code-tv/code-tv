@@ -1,3 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-docker build --build-arg HTTP_PROXY=$http_proxy --build-arg HTTPS_PROXY=$https_proxy -t code-tv/code-tv-master .
+PROJECT_ID="${PROJECT_ID:-github-code-tv}"
+
+docker build --build-arg HTTP_PROXY=$http_proxy --build-arg HTTPS_PROXY=$https_proxy -t gcr.io/$PROJECT_ID/master .

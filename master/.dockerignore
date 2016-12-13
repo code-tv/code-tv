@@ -4,3 +4,4 @@ npm-debug.log
 build-docker.sh
 run-docker.sh
 run-local.sh
+deployment.yaml
