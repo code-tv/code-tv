@@ -6,7 +6,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var index = require('./routes/index');
-var users = require('./routes/users');
+var submit = require('./routes/submit');
+var video = require('./routes/video');
 
 var app = express();
 
@@ -24,7 +25,37 @@ app.use(require('stylus').middleware(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/users', users);
+app.use('/submit', submit);
+app.use('/video', video);
+
+
+app.post('/submit', function(req, res) {
+    console.info(req.body.repo);
+    console.info('submitting ' + req.body.repo);
+
+    //submit and receive an id
+    var id = 324234;
+
+    res.writeHead(302, {
+        'Location': '/video/' + id
+        //add other headers here...
+    });
+    res.end();
+});
+
+app.get('/video/:id', function (req, res) {
+    console.info(req.params.id);
+    console.info('Waiting for ' + req.params.id);
+
+    // get youtube id from our id
+    var youtubeId = 'kcABOAAWn6s';
+
+    res.render('video.pug', {
+        youtubeId: youtubeId
+    });
+});
+
+app.use(express.static('public')).listen(8080);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
