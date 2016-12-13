@@ -55,7 +55,6 @@ app.get('/video/:id', function (req, res) {
     });
 });
 
-app.use(express.static('public')).listen(8080);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
