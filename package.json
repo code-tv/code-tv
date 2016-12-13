@@ -7,6 +7,22 @@
     "start": "node ./bin/www",
     "test": "./node_modules/.bin/mocha -u add"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/code-tv/code-tv.git"
+  },
+  "keywords": [
+    "gource",
+    "code",
+    "github",
+    "service"
+  ],
+  "author": "Marek Potociar, Ondrej Kosatka",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/code-tv/code-tv/issues"
+  },
+  "homepage": "https://github.com/code-tv/code-tv#readme",
   "dependencies": {
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
