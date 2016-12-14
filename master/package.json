@@ -4,7 +4,7 @@
   "description": "GitHub Repository Code History Visualisation Service",
   "private": true,
   "scripts": {
-    "start": "node ./app2.js",
+    "start": "node ./app.js",
     "test": "./node_modules/.bin/mocha -u add"
   },
   "repository": {
@@ -32,9 +32,7 @@
     "express": "~4.14.0",
     "express-ws": "^2.0.0",
     "morgan": "~1.7.0",
-    "pug": "~2.0.0-beta6",
     "request": "^2.79.0",
-    "serve-favicon": "~2.3.0",
-    "stylus": "0.54.5"
+    "serve-favicon": "~2.3.0"
   }
 }

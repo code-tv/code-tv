@@ -1,33 +1,89 @@
-const express = require('express');
+/**
+ * Created by m_potociar on 14/12/2016.
+ */
+'use strict';
+
+const http = require('http');
 const path = require('path');
-const favicon = require('serve-favicon');
-const logger = require('morgan');
-const cookieParser = require('cookie-parser');
+const express = require('express');
+const expressWs = require('express-ws');
 const bodyParser = require('body-parser');
-const pubsub = require('@google-cloud/pubsub')();
+// const uuid = require('node-uuid');
 
-const index = require('./routes/index');
-const submit = require('./routes/submit');
-const video = require('./routes/video');
+const expressInstance = expressWs(express());
+const app = expressInstance.app;
 
-const app = express();
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+const projectId = process.env.GCLOUD_PROJECT;
+const keyFileName = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(cookieParser());
-app.use(require('stylus').middleware(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'public')));
+const pubsub = require('@google-cloud/pubsub')({
+    projectId: projectId,
+    keyFilename: keyFileName
+});
+const datastore = require('@google-cloud/datastore')({
+    projectId: projectId,
+    keyFilename: keyFileName
+});
 
-app.use('/', index);
-app.use('/submit', submit);
-app.use('/video', video);
+app.use(bodyParser.json({limit: '500kb'}));
+app.use(bodyParser.urlencoded({limit: '500kb', extended: true}));
+
+// Mount static content
+app.use(express.static('public'));
+
+
+app.ws('/', function (ws, req) {
+    ws.on('message', function (msg) {
+
+    });
+});
+
+app.post('/submit', (req, res, next) => {
+
+    const fullRepoPath = req.body.repoPath;
+
+    const splitRepoPath = fullRepoPath.split('/');
+    const orgName = splitRepoPath[0];
+    const repoName = splitRepoPath[1];
+
+    console.info(fullRepoPath);
+    console.info('submitting ' + fullRepoPath);
+
+    const key = datastore.key('repository');
+    const data = {
+        org_name: orgName,
+        repo_name: repoName,
+        state: 'initial'
+    };
+
+    datastore.save(
+        {
+            key: key,
+            data: data
+        },
+        (err) => {
+            console.info('saving ' + fullRepoPath);
+            if (!err) {
+                console.info("Repository has been saved in datastore.");
+
+                const topic = pubsub.topic('render-tasks');
+                topic.publish(key.id);
+                console.info(`Message '${key.id}' sent.`);
+
+                const responseData = {
+                    videoId: key.id
+                };
+                res.send(responseData);
+            } else {
+                console.error("Repository cannot be stored.");
+                console.error(err);
+                next(err);
+            }
+        });
+
+    console.info('after save ' + fullRepoPath);
+});
 
 const renderSubscription = pubsub.subscription(
     'client-notifier',
@@ -38,16 +94,16 @@ const renderSubscription = pubsub.subscription(
     }
 );
 renderSubscription.on("message", function (message) {
-    console.info(`Received render request ${message.id}, ${message.data}, ${message.attributes}, ${message.ackId}`);
-    // Called every time a message is received.
-    // message.id = ID of the message.
-    // message.ackId = ID used to acknowledge the message receival.
-    // message.data = Contents of the message.
-    // message.attributes = Attributes of the message.
-    // message.timestamp = Timestamp when Pub/Sub received the message.
+    console.info(`Received render response:\nstatus: ${message.data}, recordId: ${message.attributes.record_id}, movie URL: ${message.attributes.movie_link}`);
 
-    // let jsonMessage = message.data;
-    // message.ack(); - already auto-acked
+    const wss = expressInstance.getWss('/');
+    wss.clients.forEach(function (wsConnection) {
+        wsConnection.send(JSON.stringify({
+            recordId: message.attributes.record_id,
+            status: message.data,
+            movieLink: message.attributes.movie_link
+        }));
+    });
 });
 
 // catch 404 and forward to error handler
@@ -69,4 +125,13 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-module.exports = app;
+process.on('exit', function () {
+    console.log("exit!");
+});
+
+process.on('SIGINT', function () {
+    console.log("exit-siging!");
+    process.exit();
+});
+
+app.listen(8080);
