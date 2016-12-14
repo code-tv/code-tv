@@ -1,15 +1,16 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const pubsub = require('@google-cloud/pubsub')();
 
-var index = require('./routes/index');
-var submit = require('./routes/submit');
-var video = require('./routes/video');
+const index = require('./routes/index');
+const submit = require('./routes/submit');
+const video = require('./routes/video');
 
-var app = express();
+const app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,10 +29,30 @@ app.use('/', index);
 app.use('/submit', submit);
 app.use('/video', video);
 
+const renderSubscription = pubsub.subscription(
+    'client-notifier',
+    {
+        autoAck: true,
+        maxInProgress: 1,
+        interval: 10
+    }
+);
+renderSubscription.on("message", function (message) {
+    console.info(`Received render request ${message.id}, ${message.data}, ${message.attributes}, ${message.ackId}`);
+    // Called every time a message is received.
+    // message.id = ID of the message.
+    // message.ackId = ID used to acknowledge the message receival.
+    // message.data = Contents of the message.
+    // message.attributes = Attributes of the message.
+    // message.timestamp = Timestamp when Pub/Sub received the message.
+
+    // let jsonMessage = message.data;
+    // message.ack(); - already auto-acked
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    const err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
