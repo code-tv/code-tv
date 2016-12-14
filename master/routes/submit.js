@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const request = require('request');
+const pubsub = require('@google-cloud/pubsub')();
 
 const datastore = require('@google-cloud/datastore')();
 
@@ -34,17 +35,15 @@ router.post('/', (req, res, next) => {
             if (!err) {
                 console.info("Repository has been saved in datastore.");
 
-                request.post(
-                    `http://code-tv-agent:8080/render/${org_name}/${repo_name}`, (err, httpResponse, body) => {
-                        console.error("Request failed.");
-                        console.error(err);
-                        next(err);
-                    });
+                const topic = pubsub.topic('render-tasks');
+                topic.publish(key.id);
 
                 res.writeHead(302, {
-                    'Location': '/video/' + key
+                    'Location': '/video/' + key.id
                     //add other headers here...
                 });
+
+                console.info(`Message '${key.id}' sent.`);
 
                 res.end();
             } else {
