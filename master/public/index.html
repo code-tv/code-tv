@@ -36,7 +36,13 @@
                 const msg = JSON.parse(evt.data);
                 console.log(msg);
 
-                if (msg.status == "DONE" && $('#videoId').val() == msg.videoId) {
+                console.log(msg.status == "DONE");
+                console.log($('#videoId').val() == msg.recordId);
+
+                console.log("$('#videoId').val(): " + $('#videoId').val());
+
+                if (msg.status == "DONE" && $('#videoId').val() == msg.recordId) {
+                    console.log("DONE & videId -> waiting");
                     $('#renderingStatus').val("Ready");
                     $('#submitBtn').prop('disabled', false);
                     $('#codeTvVideo').attr("src", msg.movieLink);

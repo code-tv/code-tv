@@ -14,17 +14,8 @@ const expressInstance = expressWs(express());
 const app = expressInstance.app;
 
 
-const projectId = process.env.GCLOUD_PROJECT;
-const keyFileName = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-const pubsub = require('@google-cloud/pubsub')({
-    projectId: projectId,
-    keyFilename: keyFileName
-});
-const datastore = require('@google-cloud/datastore')({
-    projectId: projectId,
-    keyFilename: keyFileName
-});
+const pubsub = require('@google-cloud/pubsub')();
+const datastore = require('@google-cloud/datastore')();
 
 app.use(bodyParser.json({limit: '500kb'}));
 app.use(bodyParser.urlencoded({limit: '500kb', extended: true}));

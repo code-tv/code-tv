@@ -19,7 +19,7 @@ kind: Deployment
 metadata:
   name: code-tv-master
 spec:
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
@@ -27,6 +27,6 @@ spec:
     spec:
       containers:
       - name: code-tv-master
-        image: gcr.io/code-tv-service/master:b12
+        image: gcr.io/code-tv-service/master:v11
         ports:
         - containerPort: 8080
