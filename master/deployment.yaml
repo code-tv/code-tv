@@ -27,6 +27,6 @@ spec:
     spec:
       containers:
       - name: code-tv-master
-        image: gcr.io/code-tv-service/master:v11
+        image: gcr.io/code-tv-service/master:v12
         ports:
         - containerPort: 8080

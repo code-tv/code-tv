@@ -76,8 +76,8 @@
             }).done(function (data) {
                 $('#videoId').val(data.videoId);
                 $('#codeTvVideo').attr("src", "");
-                document.getElementById("renderingStatus").innerHTML = "Rendering...";
-                document.getElementById("submitBtn").disabled = false;
+                document.getElementById("renderingStatus").innerHTML = "Rendering, please be patient...";
+                document.getElementById("submitBtn").disabled = true;
             });
 
         }
