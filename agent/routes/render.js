@@ -1,8 +1,8 @@
 'use strict';
 
-const express = require('express');
-const router = express.Router();
-
+/**
+ * Rendering Logic
+ */
 const spawnCommand = require('child_process').spawn;
 const render = (workDir, repoPath, videoId, next) => {
     const renderScript = spawnCommand(
@@ -34,7 +34,9 @@ const render = (workDir, repoPath, videoId, next) => {
     });
 };
 
-
+/**
+ * Upload to Google Cloud Storage Logic
+ */
 // By default, the client will authenticate using the service account file
 // specified by the GOOGLE_APPLICATION_CREDENTIALS environment variable and use
 // the project specified by the GCLOUD_PROJECT environment variable. See
@@ -98,19 +100,44 @@ const createMovie = (orgName, repoName, callback) => {
     });
 };
 
-/* get/post repository */
-router.all('/:org_name/:repo_name', (req, res, callback) => {
-    createMovie(req.params.org_name, req.params.repo_name, (redirectUrl) => {
-        res.redirect(redirectUrl);
-    });
+/**
+ * Google Datastore Operations
+ */
+const dataStore = require('@google-cloud/datastore')({
+    projectId: process.env.GCLOUD_PROJECT,
+    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
+
+const loadRecord = (recordId, callback) => {
+    const key = dataStore.key(['repository', recordId]);
+    dataStore.get(key, (err, entity) => {
+        if (err) {
+            console.error(`Unable to retrieve data for record id "${recordId}": ${err.toString()}`);
+            return;
+        }
+
+        console.info(`Entity loaded for record id "${recordId}".`);
+
+        const orgName = entity['org_name'];
+        const repoName = entity['repo_name'];
+
+        callback(orgName, repoName);
+    })
+};
+
+// TODO updade the record in Google Datastore
+// const updateRecord = () => {
+// };
+
+/**
+ * Google PubSub Messaging Logic
+ */
 const pubSub = require('@google-cloud/pubsub')({
     projectId: process.env.GCLOUD_PROJECT,
     keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
 });
 
-const renderTopic = pubSub.topic('render-tasks');
 const renderSubscription = pubSub.subscription(
     'render-agent',
     {
@@ -119,20 +146,46 @@ const renderSubscription = pubSub.subscription(
         interval: 10
     }
 );
-renderSubscription.on("message", function (message) {
-    console.info(`Received render request ${message.id}, ${message.data}, ${message.attributes}, ${message.ackId}`);
-    // Called every time a message is received.
-    // message.id = ID of the message.
-    // message.ackId = ID used to acknowledge the message receival.
-    // message.data = Contents of the message.
-    // message.attributes = Attributes of the message.
-    // message.timestamp = Timestamp when Pub/Sub received the message.
 
-    // let jsonMessage = message.data;
-    // message.ack(); - already auto-acked
+const updatesTopic = pubSub.topic('render-task-updates');
+renderSubscription.on("message", function (message) {
+    console.info(`Received render request:\n  id:   ${message.id}\n  data: ${message.data}`);
+
+    loadRecord(message.data, (orgName, repoName) => {
+        console.info(`Starting to create a movie for ${orgName}/${repoName}`);
+        createMovie(orgName, repoName, (publicMovieUrl) => {
+            console.info(`Publishing info about the newly rendered movie URL for record id "${message.data}": ${publicMovieUrl}`);
+            const doneMsg = {
+                data: "DONE",
+                attributes: {
+                    movie_link: `${publicMovieUrl}`,
+                    record_id: `${message.data}`
+                }
+            };
+            const options = {
+                raw: true
+            };
+
+            updatesTopic.publish(doneMsg, options, (err, messageIds, apiResponse) => {
+                if (err) {
+                    console.error(`Unable to send back notification for record id "${message.data}": ${err.toString()}`);
+                }
+            });
+        })
+    })
 });
 
-// TODO send updates
-const renderUpdatesTopicName = 'render-task-updates';
+/**
+ * Express.js Routing Logic
+ */
+const express = require('express');
+const router = express.Router();
+
+/* get/post repository */
+router.all('/:org_name/:repo_name', (req, res, callback) => {
+    createMovie(req.params.org_name, req.params.repo_name, (publicMovieUrl) => {
+        res.redirect(publicMovieUrl);
+    });
+});
 
 module.exports = router;
