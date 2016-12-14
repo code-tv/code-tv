@@ -26,6 +26,7 @@
   "dependencies": {
     "@google-cloud/datastore": "^0.6.0",
     "@google-cloud/storage": "^0.6.0",
+    "@google-cloud/pubsub": "^0.7.0",
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
