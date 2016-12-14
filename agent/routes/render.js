@@ -8,7 +8,7 @@ const render = (workDir, repoPath, videoId, res, next) => {
         [
             '--github-repository-name', repoPath,
             '--work-dir', workDir,
-            '--title', 'Title: Invoked from Node',
+            '--title', repoPath,
             '--video-resolution', '960x540',
             '--video-depth', '24',
             '--seconds-per-day', '0.5',
@@ -19,15 +19,15 @@ const render = (workDir, repoPath, videoId, res, next) => {
         }
     );
     renderScript.stdout.on('data', function (data) {
-        res.write(data);
+        console.info(`${data}`);
     });
 
     renderScript.stderr.on('data', function (data) {
-        res.write(data);
+        console.info(`${data}`);
     });
 
     renderScript.on('close', function (code) {
-        res.write('render script exited with code: ' + code);
+        console.info(`Render script exited with code ${code}`);
         next(`${workDir}/${videoId}.mp4`)
     });
 };
@@ -69,7 +69,7 @@ const upload = (repoPath, localFileName, next) => {
                 console.info(`File "${file.name}" has been uploaded to GCS.`);
             }
 
-            next(err, file);
+            next(err, file.name);
         }
     );
 };
@@ -88,24 +88,12 @@ router.all('/:org_name/:repo_name', function (req, res, next) {
 
     console.info('Requested repository: ' + orgName + '/' + repoName);
 
-    // var key = DataStore.key('repository', repoName);
-    //
-    // DataStore.get(key, function(err, entity) {
-    //     if (err) {
-    //         next(err);
-    //     }
-    //
-    //     console.info(entity.repository_url);
-    //
-    // });
-
     render(workDir, repoPath, videoId, res, (localFileName) => {
         upload(repoPath, localFileName, (err, uploadedFile) => {
-        // upload(repoPath, `/tmp/code-tv__code-tv_1481722425075/${videoId}.mp4`, (err, uploadedFile) => {
             const deleteWorkDirCmd = spawnCommand('rm', ['-rf', workDir]);
             deleteWorkDirCmd.on('close', function (code) {
                 console.info('Work dir "' + workDir +'" delete command completed with code: ' + code);
-                next(err, uploadedFile);
+                res.redirect(getPublicUrl(uploadedFile));
             })
         });
     });
