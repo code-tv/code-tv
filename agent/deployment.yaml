@@ -27,6 +27,6 @@ spec:
     spec:
       containers:
       - name: code-tv-agent
-        image: gcr.io/code-tv-service/agent:latest
+        image: gcr.io/code-tv-service/agent:b1
         ports:
         - containerPort: 8080

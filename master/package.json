@@ -24,12 +24,15 @@
   },
   "homepage": "https://github.com/code-tv/code-tv#readme",
   "dependencies": {
+    "@google-cloud/datastore": "^0.6.0",
+    "@google-cloud/pubsub": "^0.7.0",
     "body-parser": "~1.15.2",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
     "express": "~4.14.0",
     "morgan": "~1.7.0",
     "pug": "~2.0.0-beta6",
+    "request": "^2.79.0",
     "serve-favicon": "~2.3.0",
     "stylus": "0.54.5"
   }

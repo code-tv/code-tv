@@ -1,5 +1,7 @@
 FROM node:7.2.1
 
+ENV GCLOUD_PROJECT=code-tv-service
+
 # Create app directory
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

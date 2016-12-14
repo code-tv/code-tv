@@ -1,15 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
-var datastore = require('@google-cloud/datastore')({
-    projectId: process.env.PROJECT_ID,
-    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-});
+var datastore = require('@google-cloud/datastore')();
 
 /* get/post repository */
 router.all('/:org_name/:repo_name', function (req, res, next) {
     var org_name = req.params.org_name;
     var repo_name = req.params.repo_name;
+
     console.info('Requested repository: ' + org_name + '/' + repo_name);
 
     // var key = datastore.key('repository', repo_name);
@@ -19,8 +17,7 @@ router.all('/:org_name/:repo_name', function (req, res, next) {
     //         next(err);
     //     }
     //
-    //     console.info(entity.repository_url);
-    //
+    //     console.info(entity.key);
     // });
 
     // RUN video generation script

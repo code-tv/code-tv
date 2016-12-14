@@ -1,5 +1,7 @@
 FROM node:7.2.1
 
+ENV GCLOUD_PROJECT=code-tv-service
+
 RUN apt-get update -y && apt-get install -y software-properties-common
 RUN apt-get update -y && apt-get install -y git mercurial xvfb xfonts-base xfonts-75dpi xfonts-100dpi xfonts-cyrillic gource libav-tools screen
 
