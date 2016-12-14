@@ -1,11 +1,9 @@
 FROM node:7.2.1
 
-ENV GCLOUD_PROJECT=code-tv-service
-
 RUN apt-get update -y && apt-get install -y software-properties-common
 RUN apt-get update -y && apt-get install -y git mercurial xvfb xfonts-base xfonts-75dpi xfonts-100dpi xfonts-cyrillic gource libav-tools screen
 
-VOLUME ["/avatars", "/work"]
+VOLUME ["/avatars", "/work", "/credentials"]
 
 # Create app directory
 RUN mkdir -p /usr/src/app
@@ -16,7 +14,7 @@ RUN npm install
 # Bundle app source
 COPY . /usr/src/app
 
+ENV GCLOUD_PROJECT=code-tv-service
+
 EXPOSE 8080
 CMD [ "npm", "start" ]
-
-#CMD ["/bin/bash", "-c", "/usr/src/app/scripts/render.sh", "-g", "code-tv/code-tv", "-w", "/work", "-t", "Code TV Video"]

@@ -34,6 +34,10 @@ case $key in
     SEC_PER_DAY="$2"
     shift # past argument
     ;;
+    -o|--output-video-name)
+    OUTPUT_VIDEO_NAME="$2"
+    shift # past argument
+    ;;
     *)
     # unknown option
     ;;
@@ -43,6 +47,7 @@ done
 
 GITHUB_REPO_NAME="${GITHUB_REPO_NAME:-code-tv/code-tv}"
 WORK_DIR="${WORK_DIR:-/work}"
+OUTPUT_VIDEO_NAME="${OUTPUT_VIDEO_NAME:-video}"
 VIDEO_TITLE="${VIDEO_TITLE:-History of Code}"
 VIDEO_RESOLUTION="${VIDEO_RESOLUTION:-960x540}"
 VIDEO_DEPTH="${VIDEO_DEPTH:-24}"
@@ -53,22 +58,23 @@ GIT_REPOSITORY_DIR="$WORK_DIR/repository"
 echo "Script variables:"
 echo GITHUB_REPO_NAME:   ${GITHUB_REPO_NAME}
 echo WORK_DIR:           ${WORK_DIR}
+echo OUTPUT_VIDEO_NAME:  ${OUTPUT_VIDEO_NAME}
 echo GIT_REPOSITORY_DIR: ${GIT_REPOSITORY_DIR}
 echo VIDEO_TITLE:        ${VIDEO_TITLE}
 echo VIDEO_RESOLUTION:   ${VIDEO_RESOLUTION}
 echo VIDEO_DEPTH:        ${VIDEO_DEPTH}
 echo SEC_PER_DAY:        ${SEC_PER_DAY}
 
-echo "Removing an stale work files from $WORK_DIR directory..."
-rm -f ${WORK_DIR}/video.ppm ${WORK_DIR}/video.mp4
-rm -rf ${GIT_REPOSITORY_DIR}
+echo "Refreshing $WORK_DIR working directory..."
+rm -rf ${WORK_DIR}/*
+mkdir -p ${WORK_DIR}
 echo "Done."
 
 echo "Cloning $GITHUB_REPO_NAME repository into $GIT_REPOSITORY_DIR directory..."
 git clone https://github.com/${GITHUB_REPO_NAME}.git ${GIT_REPOSITORY_DIR}
 echo "Done."
 
-echo "Creating $WORK_DIR/video.ppm file..."
+echo "Creating $WORK_DIR/$OUTPUT_VIDEO_NAME.ppm file..."
 pushd .
 cd ${GIT_REPOSITORY_DIR}
 screen -dmS "recording" xvfb-run -a -s "-screen 0 ${VIDEO_RESOLUTION}x${VIDEO_DEPTH}" \
@@ -84,7 +90,7 @@ screen -dmS "recording" xvfb-run -a -s "-screen 0 ${VIDEO_RESOLUTION}x${VIDEO_DE
     --bloom-intensity 0.9 \
     --time-scale 1.0 \
     --stop-at-end \
-    -o "$WORK_DIR/video.ppm"
+    -o "$WORK_DIR/$OUTPUT_VIDEO_NAME.ppm"
 popd
 echo "Done."
 
@@ -94,32 +100,32 @@ while [[ ${currentSize} -eq "0" || ${previousSize} -lt ${currentSize} ]] ;
 do
     sleep 2
     previousSize=${currentSize}
-    currentSize=$(stat -c '%s' ${WORK_DIR}/video.ppm)
-    echo "Current video.ppm size is $currentSize"
+    currentSize=$(stat -c '%s' ${WORK_DIR}/${OUTPUT_VIDEO_NAME}.ppm)
+    echo "Current $OUTPUT_VIDEO_NAME.ppm size is $currentSize"
 done
-echo "The $WORK_DIR/video.ppm size has stopped growing."
+echo "The $WORK_DIR/$OUTPUT_VIDEO_NAME.ppm size has stopped growing."
 # This hack is needed because gource process doesn't stop;
 # MP: it seems that on debian-based node docker image it's not needed
 #echo "Force-stopping the recording session."
 #screen -r -S "recording" -X quit 2>/dev/null
 
 
-echo "Creating $WORK_DIR/video.mp4 file..."
+echo "Creating $WORK_DIR/$OUTPUT_VIDEO_NAME.mp4 file..."
 avconv -y -r 30 -f image2pipe \
     -loglevel info \
     -vcodec ppm \
-    -i "$WORK_DIR/video.ppm" \
+    -i "$WORK_DIR/$OUTPUT_VIDEO_NAME.ppm" \
     -vcodec libx264 \
     -preset medium \
     -pix_fmt yuv420p \
     -crf 1 \
     -threads 0 \
     -bf 0 \
-    "$WORK_DIR/video.mp4"
+    "$WORK_DIR/$OUTPUT_VIDEO_NAME.mp4"
 echo "Done."
 
-echo "Removing the temporary $WORK_DIR/video.ppm file."
-rm -f "$WORK_DIR/video.ppm"
+echo "Removing the temporary $WORK_DIR/$OUTPUT_VIDEO_NAME.ppm file."
+rm -f "$WORK_DIR/$OUTPUT_VIDEO_NAME.ppm"
 echo "Done."
 
 echo "Removing $GIT_REPOSITORY_DIR directory..."

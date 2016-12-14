@@ -1,14 +1,12 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var request = require('request');
+const request = require('request');
 
-var datastore = require('@google-cloud/datastore')();
-
-var pubsub = require('@google-cloud/pubsub')();
+const datastore = require('@google-cloud/datastore')();
 
 /* GET users listing. */
-router.post('/', function (req, res, next) {
+router.post('/', (req, res, next) => {
 
     const repo_fullname = req.body.repo;
 
@@ -19,43 +17,44 @@ router.post('/', function (req, res, next) {
     console.info(repo_fullname);
     console.info('submitting ' + repo_fullname);
 
-    var key = datastore.key('repository');
-    var data = {
+    const key = datastore.key('repository');
+    const data = {
         org_name: org_name,
         repo_name: repo_name,
         state: 'initial'
     };
 
-    datastore.save({
-        key: key,
-        data: data
-    }, function (err) {
-        console.info('saving ' + repo_fullname);
-        if (!err) {
-            console.info("Repository has been saved in datastore.");
+    datastore.save(
+        {
+            key: key,
+            data: data
+        },
+        (err) => {
+            console.info('saving ' + repo_fullname);
+            if (!err) {
+                console.info("Repository has been saved in datastore.");
 
-            request.post(
-                `http://code-tv-agent:8080/repository/${org_name}/${repo_name}`, function (err, httpResponse, body) {
-                    console.error("Request failed.");
-                    console.error(err);
-                    next(err);
+                request.post(
+                    `http://code-tv-agent:8080/render/${org_name}/${repo_name}`, (err, httpResponse, body) => {
+                        console.error("Request failed.");
+                        console.error(err);
+                        next(err);
+                    });
+
+                res.writeHead(302, {
+                    'Location': '/video/' + key
+                    //add other headers here...
                 });
 
-            res.writeHead(302, {
-                'Location': '/video/' + key
-                //add other headers here...
-            });
-
-            res.end();
-        } else {
-            console.error("Repository cannot be stored.");
-            console.error(err);
-            next(err);
-        }
-    });
+                res.end();
+            } else {
+                console.error("Repository cannot be stored.");
+                console.error(err);
+                next(err);
+            }
+        });
 
     console.info('after save ' + repo_fullname);
-
 });
 
 module.exports = router;
