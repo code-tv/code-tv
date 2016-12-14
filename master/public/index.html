@@ -36,15 +36,9 @@
                 const msg = JSON.parse(evt.data);
                 console.log(msg);
 
-                console.log(msg.status == "DONE");
-                console.log($('#videoId').val() == msg.recordId);
-
-                console.log("$('#videoId').val(): " + $('#videoId').val());
-
                 if (msg.status == "DONE" && $('#videoId').val() == msg.recordId) {
-                    console.log("DONE & videId -> waiting");
-                    $('#renderingStatus').val("Ready");
-                    $('#submitBtn').prop('disabled', false);
+                    document.getElementById("renderingStatus").innerHTML = "Ready";
+                    document.getElementById("submitBtn").disabled = false;
                     $('#codeTvVideo').attr("src", msg.movieLink);
                 }
             }
@@ -81,24 +75,17 @@
                 data: JSON.stringify({repoPath: $("#repoPath").val()}),
             }).done(function (data) {
                 $('#videoId').val(data.videoId);
-                $('#renderingStatus').val("Rendering...");
-                $('#submitBtn').prop('disabled', true);
                 $('#codeTvVideo').attr("src", "");
+                document.getElementById("renderingStatus").innerHTML = "Rendering...";
+                document.getElementById("submitBtn").disabled = false;
             });
 
         }
     </script>
     <script type="text/javascript" src="http://canvasjs.com/assets/script/canvasjs.min.js"></script>
     <script src="//code.jquery.com/jquery-1.12.3.js"></script>
-    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-dateFormat/1.0/jquery.dateFormat.min.js"></script>-->
 
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        a {
-            font-family: monospace;
-        }
-    </style>
 </head>
 <body>
 <div class="container">
@@ -118,7 +105,6 @@
     <div class="jumbotron">
         <h2>Code History Movie</h2>
         <video id="codeTvVideo" src="" width="960" height="540" preload controls/>
-        <!--src="https://storage.googleapis.com/code-tv-renders/code-tv/code-tv.mp4"-->
     </div>
 </div>
 
