@@ -44,7 +44,7 @@ app.get('/', function (req, res, next) {
 
 app.post('/submit', (req, res, next) => {
 
-    const fullRepoPath = req.body.repo;
+    const fullRepoPath = req.body.repoPath;
 
     const splitRepoPath = fullRepoPath.split('/');
     const orgName = splitRepoPath[0];
@@ -72,15 +72,12 @@ app.post('/submit', (req, res, next) => {
 
                 const topic = pubsub.topic('render-tasks');
                 topic.publish(key.id);
-
-                res.writeHead(302, {
-                    'Location': '/video/' + key.id
-                    //add other headers here...
-                });
-
                 console.info(`Message '${key.id}' sent.`);
 
-                res.end();
+                const responseData = {
+                    videoId: key.id
+                };
+                res.send(responseData);
             } else {
                 console.error("Repository cannot be stored.");
                 console.error(err);
